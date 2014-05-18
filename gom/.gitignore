@@ -31,3 +31,4 @@ test-gom-transform
 test-gom-migration
 test-gom-constraints
 *.typelib
+build
