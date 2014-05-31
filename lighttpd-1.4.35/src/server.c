@@ -786,12 +786,13 @@ int main (int argc, char **argv) {
 						"can't find username", srv->srvconf.username);
 				return -1;
 			}
-
+            /*
 			if (pwd->pw_uid == 0) {
 				log_error_write(srv, __FILE__, __LINE__, "s",
 						"I will not set uid to 0\n");
 				return -1;
-			}
+            }
+            */
 		}
 
 		if (srv->srvconf.groupname->used) {
@@ -800,11 +801,13 @@ int main (int argc, char **argv) {
 					"can't find groupname", srv->srvconf.groupname);
 				return -1;
 			}
+            /*
 			if (grp->gr_gid == 0) {
 				log_error_write(srv, __FILE__, __LINE__, "s",
 						"I will not set gid to 0\n");
 				return -1;
 			}
+            */
 		}
 #endif
 		/* we need root-perms for port < 1024 */
