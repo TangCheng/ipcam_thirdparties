@@ -59,10 +59,14 @@ sql_type_for_column (GParamSpec *pspec)
    GType parent_type;
 
    switch (pspec->value_type) {
+   case G_TYPE_CHAR:
    case G_TYPE_INT:
    case G_TYPE_INT64:
+   case G_TYPE_LONG:
+   case G_TYPE_UCHAR:
    case G_TYPE_UINT:
    case G_TYPE_UINT64:
+   case G_TYPE_ULONG:
    case G_TYPE_BOOLEAN:
       return "INTEGER";
    case G_TYPE_STRING:
@@ -659,7 +663,8 @@ resource_get_property(GObject     *object,
 
 /**
  * gom_command_builder_build_insert:
- * @builder: (in): A #GomCommandBuilder.
+ * @builder: A #GomCommandBuilder.
+ * @resource: a #GomResource
  *
  * Builds a new #GomCommand that will insert the parameters of the resource
  * into the underlying database.
@@ -764,7 +769,8 @@ gom_command_builder_build_insert (GomCommandBuilder *builder,
 
 /**
  * gom_command_builder_build_update:
- * @builder: (in): A #GomCommandBuilder.
+ * @builder: A #GomCommandBuilder.
+ * @resource: a #GomResource
  *
  * Builds a new #GomCommand that will update the contents stored for @resource
  * in the underlying database.
