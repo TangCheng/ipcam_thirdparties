@@ -1,3 +1,7 @@
 Makefile
 *.o
 *.so*
+*.in
+autom4te.cache
+!libczmq.pc.in
+build
