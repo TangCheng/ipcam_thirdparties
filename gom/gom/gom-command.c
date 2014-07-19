@@ -59,6 +59,8 @@ gom_command_bind_param (GomCommand   *command,
 
    priv = command->priv;
 
+   g_debug("Binding gtype %s (%d).", g_type_name(G_VALUE_TYPE(value)), G_VALUE_TYPE(value));
+
    switch (G_VALUE_TYPE(value)) {
    case G_TYPE_BOOLEAN:
       sqlite3_bind_int(priv->stmt, param, g_value_get_boolean(value));
@@ -69,17 +71,29 @@ gom_command_bind_param (GomCommand   *command,
    case G_TYPE_FLOAT:
       sqlite3_bind_double(priv->stmt, param, g_value_get_float(value));
       break;
+   case G_TYPE_CHAR:
+      sqlite3_bind_int(priv->stmt, param, g_value_get_schar(value));
+      break;
    case G_TYPE_INT:
       sqlite3_bind_int(priv->stmt, param, g_value_get_int(value));
       break;
    case G_TYPE_INT64:
       sqlite3_bind_int64(priv->stmt, param, g_value_get_int64(value));
       break;
+   case G_TYPE_LONG:
+      sqlite3_bind_int64(priv->stmt, param, g_value_get_long(value));
+      break;
+   case G_TYPE_UCHAR:
+      sqlite3_bind_int(priv->stmt, param, g_value_get_uchar(value));
+      break;
    case G_TYPE_UINT:
       sqlite3_bind_int(priv->stmt, param, g_value_get_uint(value));
       break;
    case G_TYPE_UINT64:
       sqlite3_bind_int64(priv->stmt, param, g_value_get_uint64(value));
+      break;
+   case G_TYPE_ULONG:
+      sqlite3_bind_int64(priv->stmt, param, g_value_get_ulong(value));
       break;
    case G_TYPE_ENUM:
       sqlite3_bind_int(priv->stmt, param, g_value_get_enum(value));
@@ -137,7 +151,7 @@ gom_command_bind_param (GomCommand   *command,
          }
          break;
       }
-      g_warning("Failed to bind gtype %s.", g_type_name(G_VALUE_TYPE(value)));
+      g_warning("Failed to bind gtype %s (%d).", g_type_name(G_VALUE_TYPE(value)), G_VALUE_TYPE(value));
       g_assert_not_reached();
       break;
    }

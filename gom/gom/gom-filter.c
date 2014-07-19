@@ -332,6 +332,8 @@ join_value_array (GArray *dst,
    g_return_if_fail(src);
 
    g_array_append_vals(dst, src->data, src->len);
+   g_array_set_clear_func(src, NULL);
+   g_array_unref(src);
 }
 
 /**
@@ -379,16 +381,9 @@ gom_filter_get_values (GomFilter *filter)
    }
    case GOM_FILTER_AND:
    case GOM_FILTER_OR:
-      va = g_array_new(FALSE, FALSE, sizeof(GValue));
-      g_array_set_clear_func(va, (GDestroyNotify) g_value_unset);
-
-      tmp = gom_filter_get_values(priv->left);
-      join_value_array(va, tmp);
-      g_array_unref(tmp);
-
+      va = gom_filter_get_values(priv->left);
       tmp = gom_filter_get_values(priv->right);
       join_value_array(va, tmp);
-      g_array_unref(tmp);
 
       return va;
    default:

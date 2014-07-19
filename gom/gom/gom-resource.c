@@ -573,13 +573,13 @@ gom_resource_do_save (GomResource  *resource,
    }
 
    do {
-      types = g_slist_prepend(types, GINT_TO_POINTER(resource_type));
+      types = g_slist_prepend(types, GSIZE_TO_POINTER(resource_type));
    } while ((resource_type = g_type_parent(resource_type)) != GOM_TYPE_RESOURCE);
 
    for (iter = types; iter; iter = iter->next) {
       GomCommand *command;
 
-      resource_type = GPOINTER_TO_INT(iter->data);
+      resource_type = GPOINTER_TO_SIZE(iter->data);
 
       g_object_set(builder,
                    "resource-type", resource_type,
@@ -762,7 +762,7 @@ gom_resource_fetch_m2m_cb (GomAdapter *adapter,
    g_return_if_fail(G_IS_SIMPLE_ASYNC_RESULT(simple));
 
    m2m_table = g_object_get_data(G_OBJECT(simple), "m2m-table");
-   resource_type = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(simple),
+   resource_type = GPOINTER_TO_SIZE(g_object_get_data(G_OBJECT(simple),
                                                      "resource-type"));
    filter = g_object_get_data(G_OBJECT(simple), "filter");
    resource = GOM_RESOURCE(g_async_result_get_source_object(G_ASYNC_RESULT(simple)));
@@ -845,7 +845,7 @@ gom_resource_fetch_m2m_async (GomResource          *resource,
    simple = g_simple_async_result_new(G_OBJECT(resource), callback, user_data,
                                       gom_resource_fetch_m2m_async);
    g_object_set_data(G_OBJECT(simple), "resource-type",
-                     GINT_TO_POINTER(resource_type));
+                     GSIZE_TO_POINTER(resource_type));
    g_object_set_data_full(G_OBJECT(simple), "m2m-table",
                           g_strdup(m2m_table), g_free);
    if (filter) {

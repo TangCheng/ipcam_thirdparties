@@ -226,7 +226,7 @@ out:
  * @version: (in): The version to migrate to.
  * @migrator: (in) (scope call): A function to perform the migrations.
  * @migrator_data: (in): User data for @migrator.
- * @error:
+ * @error: a #GError
  *
  * Performs a migration on the underlying database. This will
  * call @migrator from the SQLite thread for each migration to perform.
@@ -280,6 +280,7 @@ gom_repository_migrate_sync (GomRepository          *repository,
  * @repository: (in): A #GomRepository.
  * @version: (in): The version to migrate to.
  * @migrator: (in) (scope async): A function to perform the migrations.
+ * @migrator_data: (in): User data for @migrator
  * @callback: (in): A callback to execute upon completion.
  * @user_data: (in): User data for @callback.
  *
@@ -348,7 +349,7 @@ gom_repository_automatic_migrator (GomRepository  *repository,
   GList *l;
 
   for (l = object_types; l != NULL; l = l->next) {
-    GType type = GPOINTER_TO_INT (l->data);
+    GType type = GPOINTER_TO_SIZE (l->data);
     GomResourceClass *klass;
     GomCommandBuilder *builder;
     GList *cmds, *c;
@@ -382,7 +383,7 @@ bail_object:
  * @repository: (in): A #GomRepository.
  * @version: (in): The version to migrate to.
  * @object_types: (element-type GType) (transfer container): a #GList of #GType
- * @error:
+ * @error: a #GError
  *
  * Performs an automatic migration on the underlying database. For
  * each of the #GType passed in @object_types, the table will be
@@ -397,13 +398,19 @@ gom_repository_automatic_migrate_sync (GomRepository          *repository,
                                        GList                  *object_types,
                                        GError                **error)
 {
+   gboolean ret;
+
    g_return_val_if_fail(GOM_IS_REPOSITORY(repository), FALSE);
    g_return_val_if_fail(version >= 1, FALSE);
    g_return_val_if_fail(object_types != NULL, FALSE);
 
-   return gom_repository_migrate_sync(repository, version,
-                                      gom_repository_automatic_migrator, object_types,
-                                      error);
+   ret = gom_repository_migrate_sync(repository, version,
+                                     gom_repository_automatic_migrator, object_types,
+                                     error);
+
+   g_list_free(object_types);
+
+   return ret;
 }
 
 /**
@@ -432,6 +439,7 @@ gom_repository_automatic_migrate_async (GomRepository         *repository,
    g_return_if_fail(version >= 1);
    g_return_if_fail(object_types != NULL);
 
+   g_object_set_data_full (G_OBJECT (repository), "object-types", object_types, (GDestroyNotify) g_list_free);
    gom_repository_migrate_async (repository, version,
                                  gom_repository_automatic_migrator, object_types,
                                  callback, user_data);
@@ -442,7 +450,11 @@ gom_repository_automatic_migrate_finish (GomRepository  *repository,
                                          GAsyncResult   *result,
                                          GError        **error)
 {
-  return gom_repository_migrate_finish(repository, result, error);
+   g_return_val_if_fail(GOM_IS_REPOSITORY(repository), FALSE);
+   g_return_val_if_fail(G_IS_SIMPLE_ASYNC_RESULT(result), FALSE);
+
+   g_object_set_data(G_OBJECT(repository), "object-types", NULL);
+   return gom_repository_migrate_finish(repository, result, error);
 }
 
 static void
@@ -467,7 +479,7 @@ gom_repository_find_cb (GomAdapter *adapter,
    repository = GOM_REPOSITORY(g_async_result_get_source_object(G_ASYNC_RESULT(simple)));
    g_assert(GOM_IS_REPOSITORY(repository));
 
-   resource_type = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(simple),
+   resource_type = GPOINTER_TO_SIZE(g_object_get_data(G_OBJECT(simple),
                                                      "resource-type"));
    g_assert(g_type_is_a(resource_type, GOM_TYPE_RESOURCE));
 
@@ -553,7 +565,7 @@ gom_repository_find_sync (GomRepository  *repository,
    simple = g_simple_async_result_new(G_OBJECT(repository), NULL, NULL,
                                       gom_repository_find_sync);
    g_object_set_data(G_OBJECT(simple), "resource-type",
-                     GINT_TO_POINTER(resource_type));
+                     GSIZE_TO_POINTER(resource_type));
    g_object_set_data_full(G_OBJECT(simple), "filter",
                           filter ? g_object_ref(filter) : NULL,
                           filter ? g_object_unref : NULL);
@@ -595,7 +607,7 @@ gom_repository_find_async (GomRepository       *repository,
    simple = g_simple_async_result_new(G_OBJECT(repository), callback, user_data,
                                       gom_repository_find_async);
    g_object_set_data(G_OBJECT(simple), "resource-type",
-                     GINT_TO_POINTER(resource_type));
+                     GSIZE_TO_POINTER(resource_type));
 
    g_object_set_data_full(G_OBJECT(simple), "filter",
                           filter ? g_object_ref(filter) : NULL,
