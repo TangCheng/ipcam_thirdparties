@@ -21,5 +21,5 @@
 
 DATADIR = "${prefix}/share"
 DATADIR = DATADIR.replace(
-    "${prefix}", "/usr/local")
+    "${prefix}", "/usr")
 VERSION = "2.40.0"
