@@ -176,7 +176,7 @@ gom_repository_migrate_cb (GomAdapter *adapter,
    }
 
    EXECUTE_OR_GOTO(adapter, "PRAGMA synchronous = NORMAL;", &error, rollback);
-   EXECUTE_OR_GOTO(adapter, "PRAGMA journal_mode = WAL;", &error, rollback);
+   EXECUTE_OR_GOTO(adapter, "PRAGMA journal_mode = PERSIST;", &error, rollback);
 
    EXECUTE_OR_GOTO(adapter, "BEGIN;", &error, rollback);
 

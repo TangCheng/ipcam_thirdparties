@@ -1,7 +1,7 @@
 include Makefile.tests
 include data/Makefile.include
 include gom/Makefile.include
-include tests/Makefile.include
+#include tests/Makefile.include
 
 SUBDIRS = . doc po
 
