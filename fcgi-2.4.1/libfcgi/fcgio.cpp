@@ -23,6 +23,7 @@
 #endif
 
 #include <limits.h>
+#include <cstdio>
 #include "fcgio.h"
 
 using std::streambuf;
