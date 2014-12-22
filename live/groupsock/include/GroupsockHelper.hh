@@ -133,6 +133,24 @@ void reclaimGroupsockPriv(UsageEnvironment& env);
 extern int gettimeofday(struct timeval*, int*);
 #endif
 
+#if defined(__linux__) || defined(__linux)
+#include <mpi_sys.h>
+#undef gettimeofday
+static inline int __gettimeofday(struct timeval *tp, struct timezone *tzp)
+{
+	HI_U64 u64Pts;
+	HI_S32 s32Ret;
+
+	s32Ret = HI_MPI_SYS_GetCurPts(&u64Pts);
+	if (s32Ret)
+		return -1;
+	tp->tv_sec = u64Pts / 1000000UL;
+	tp->tv_usec = u64Pts % 1000000UL;
+	return 0;
+}
+#define gettimeofday __gettimeofday
+#endif
+
 // The following are implemented in inet.c:
 extern "C" netAddressBits our_inet_addr(char const*);
 extern "C" void our_srandom(int x);
