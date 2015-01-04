@@ -135,8 +135,7 @@ extern int gettimeofday(struct timeval*, int*);
 
 #if defined(__linux__) || defined(__linux)
 #include <mpi_sys.h>
-#undef gettimeofday
-static inline int __gettimeofday(struct timeval *tp, struct timezone *tzp)
+static inline int get_rtp_time(struct timeval *tp, struct timezone *tzp)
 {
 	HI_U64 u64Pts;
 	HI_S32 s32Ret;
@@ -148,7 +147,8 @@ static inline int __gettimeofday(struct timeval *tp, struct timezone *tzp)
 	tp->tv_usec = u64Pts % 1000000UL;
 	return 0;
 }
-#define gettimeofday __gettimeofday
+#undef gettimeofday
+#define gettimeofday get_rtp_time
 #endif
 
 // The following are implemented in inet.c:
