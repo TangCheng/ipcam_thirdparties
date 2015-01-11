@@ -96,7 +96,14 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
 
 u_int32_t RTPSink::presetNextTimestamp() {
   struct timeval timeNow;
+#if 0
   gettimeofday(&timeNow, NULL);
+#else
+  struct timespec tspecNow;
+  clock_gettime(CLOCK_MONOTONIC, &tspecNow);
+  timeNow.tv_sec = tspecNow.tv_sec;
+  timeNow.tv_usec = tspecNow.tv_nsec / 1000;
+#endif
 
   u_int32_t tsNow = convertToRTPTimestamp(timeNow);
   fTimestampBase = tsNow;

@@ -22,9 +22,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GroupsockHelper.hh"
 #include "rtcp_from_spec.h"
 
-#undef gettimeofday
-extern int gettimeofday(struct timeval *TP, struct timezone *TZP);
-
 ////////// RTCPMemberDatabase //////////
 
 class RTCPMemberDatabase {
@@ -759,7 +756,6 @@ void RTCPInstance::addSR() {
   double fractionalPart = (timeNow.tv_usec/15625.0)*0x04000000; // 2^32/10^6
   fOutBuf->enqueueWord((unsigned)(fractionalPart+0.5));
       // NTP timestamp least-significant word
-  get_rtp_time(&timeNow, NULL);
   unsigned rtpTimestamp = fSink->convertToRTPTimestamp(timeNow);
   fOutBuf->enqueueWord(rtpTimestamp); // RTP ts
 
