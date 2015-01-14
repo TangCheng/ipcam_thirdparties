@@ -133,6 +133,23 @@ void reclaimGroupsockPriv(UsageEnvironment& env);
 extern int gettimeofday(struct timeval*, int*);
 #endif
 
+#include <time.h>
+static inline int get_monotonic_time(struct timeval *tv)
+{
+  struct timespec tsNow;
+  int ret;
+
+  ret = clock_gettime(CLOCK_MONOTONIC, &tsNow);
+  if (ret == 0) {
+    tv->tv_sec = tsNow.tv_sec;
+    tv->tv_usec = tsNow.tv_nsec / 1000;
+  }
+
+  return ret;
+}
+
+#define gettimeofday(tv,tz) get_monotonic_time(tv)
+
 // The following are implemented in inet.c:
 extern "C" netAddressBits our_inet_addr(char const*);
 extern "C" void our_srandom(int x);
