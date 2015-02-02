@@ -94,7 +94,6 @@ private:
   Boolean sendRTPorRTCPPacketOverTCP(unsigned char* packet, unsigned packetSize,
 				     int socketNum, unsigned char streamChannelId);
   Boolean sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed);
-  Boolean sendDataOverTCP(int socketNum, struct iovec *iov, int iovcnt, Boolean forceSendToSucceed);
 
 private:
   friend class SocketDescriptor;
