@@ -194,9 +194,9 @@
 # undef  SGTTY
 #endif
 
-#if defined(linux)
-# define TERMIOS
-# undef  TERMIO
+#if defined(linux) && !defined(TERMIO)
+# undef  TERMIOS
+# define TERMIO
 # undef  SGTTY
 #endif
 
