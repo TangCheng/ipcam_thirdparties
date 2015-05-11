@@ -320,14 +320,25 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
   // the subsequent "send()" for the <packet> data to succeed, even if we have to do so with
   // a blocking "send()".)
   do {
+    struct msghdr mh;
+    struct iovec iov[2];
     u_int8_t framingHeader[4];
     framingHeader[0] = '$';
     framingHeader[1] = streamChannelId;
     framingHeader[2] = (u_int8_t) ((packetSize&0xFF00)>>8);
     framingHeader[3] = (u_int8_t) (packetSize&0xFF);
-    if (!sendDataOverTCP(socketNum, framingHeader, 4, False)) break;
-
-    if (!sendDataOverTCP(socketNum, packet, packetSize, True)) break;
+    iov[0].iov_base = framingHeader;
+    iov[0].iov_len = 4;
+    iov[1].iov_base = packet;
+    iov[1].iov_len = packetSize;
+    mh.msg_name = NULL;
+    mh.msg_namelen = 0;
+    mh.msg_iov = iov;
+    mh.msg_iovlen = 2;
+    mh.msg_control = NULL;
+    mh.msg_controllen = 0;
+    mh.msg_flags = 0;
+    if (!sendDataOverTCP(socketNum, &mh)) break;
 #ifdef DEBUG_SEND
     fprintf(stderr, "sendRTPorRTCPPacketOverTCP: completed\n"); fflush(stderr);
 #endif
@@ -385,6 +396,28 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsig
     return False;
   }
 
+  return True;
+}
+
+Boolean RTPInterface::sendDataOverTCP(int socketNum, const struct msghdr *msg) {
+  int sendResult = sendmsg(socketNum, msg, 0/*flags*/);
+  if (sendResult < 0) {
+    // The TCP send() failed
+
+    if (errno == EAGAIN) {
+      makeSocketBlocking(socketNum, RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS);
+      sendResult = sendmsg(socketNum, msg, 0/*flags*/);
+      if (sendResult < 0) {
+        removeStreamSocket(socketNum, 0xFF);
+        return False;
+      }
+      makeSocketNonBlocking(socketNum);
+    }
+    else {
+      removeStreamSocket(socketNum, 0xFF);
+      return False;
+    }
+  }
   return True;
 }
 
